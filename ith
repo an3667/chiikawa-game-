@@ -1,0 +1,42 @@
+# Khởi đầu: zoom camera, giấu GameOver, reset Keys + Lives
+if SceneJustBegins():
+  ZoomCamera(2)
+  ZoomCamera(2, "Background")
+  Hide(GameOverText)
+  TextContainerCapability::TextContainerBehavior::SetValue(KeysText, Text, =, "Keys: 0")
+  TextContainerCapability::TextContainerBehavior::SetValue(HeartsText, Text, =, "❤❤❤")
+  SetNumberVariable(Keys, =, 0)
+  SetNumberVariable(Lives, =, 3)
+  ResetTimer("HurtTimer")
+
+# Nhặt Keys (đang dùng Coins làm Keys)
+if CollisionNP(Player, Coins):
+  Delete(Coins)
+  PlaySound(assets/CoinPickUp.wav, , 80, CoinPitch)
+  ResetTimer("Coin_PitchTimer")
+  SetNumberVariable(CoinPitch, +, RandomWithStep(0.050, 0.1, 0.025))
+  SetNumberVariable(Keys, +, 1)
+  TextContainerCapability::TextContainerBehavior::SetValue(KeysText, Text, =, "Keys: " + ToString(Keys))
+
+# Chạm gai mất 1 tim, có 1 giây bất tử
+if CollisionNP(Player, Spikes) and CompareTimer("HurtTimer", >, 1):
+  SetNumberVariable(Lives, -, 1)
+  ResetTimer("HurtTimer")
+  Flash::Flash::Flash(Player, Flash, 0.5)
+  if NumberVariable(Lives, =, 2):
+    TextContainerCapability::TextContainerBehavior::SetValue(HeartsText, Text, =, "❤❤")
+  if NumberVariable(Lives, =, 1):
+    TextContainerCapability::TextContainerBehavior::SetValue(HeartsText, Text, =, "❤")
+  if NumberVariable(Lives, <=, 0):
+    TextContainerCapability::TextContainerBehavior::SetValue(HeartsText, Text, =, "")
+    Show(GameOverText)
+
+# Hết tim bấm R chơi lại
+if KeyFromTextJustPressed("r") and NumberVariable(Lives, <=, 0):
+  Scene("Game Scene", no)
+
+# Phím A/D di chuyển trái phải
+if KeyFromTextPressed("a"):
+  PlatformBehavior::SimulateLeftKey(Player, PlatformerObject)
+if KeyFromTextPressed("d"):
+  PlatformBehavior::SimulateRightKey(Player, PlatformerObject)
